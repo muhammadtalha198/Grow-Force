@@ -22,8 +22,8 @@ import TokenPrice from "./TokenPrice";
 const Currencies = [
  { name: "Ethereum", symbol: "ETH", iconURL: "img/currencies/ETH.png", address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" },
  { name: "USD Coin", symbol: "USDC", iconURL: "img/currencies/USDC.png", address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" },
- { name: "Tether USD", symbol: "USDT", iconURL: "img/currencies/USDT.png", address: "0x514910771AF9Ca656af840dff83E8264EcF986CA" },
- { name: "Chainlink", symbol: "LINK", iconURL: "img/currencies/LINK.png", address: "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599" },
+ { name: "Tether USD", symbol: "USDT", iconURL: "img/currencies/USDT.png", address: "0xdAC17F958D2ee523a2206206994597C13D831ec7" },
+ { name: "Chainlink", symbol: "LINK", iconURL: "img/currencies/LINK.png", address: "0x514910771AF9Ca656af840dff83E8264EcF986CA" },
  { name: "Wrapped BNB", symbol: "WBNB", iconURL: "img/currencies/WBNB.png", address: "0x...WBNB_ADDRESS" },
  { name: "Wrapped Ethereum", symbol: "WETH", iconURL: "img/currencies/WETH.png", address: "0x...WETH_ADDRESS" },
  { name: "Wrapped Bitcoin", symbol: "WBTC", iconURL: "img/currencies/WBTC.png", address: "0x...WBTC_ADDRESS" },
@@ -942,13 +942,25 @@ const PresaleForm = () => {
      <h2 className="text-bg-logo font-semibold text-sm md:text-base">You deposit</h2>
      <div className="md:mb-2 mb-1 mt-2 mx-auto flex items-center justify-center flex-wrap md:gap-2 gap-1">
        {Currencies.slice(0, 4).map((currency, i) => (
-         <CurrencyRadio key={i} symbol={currency.symbol} iconURL={currency.iconURL} />
+         <CurrencyRadio 
+           key={i} 
+           symbol={currency.symbol} 
+           iconURL={currency.iconURL}
+           selectedCurrency={selectedCurrency}
+           onCurrencyChange={setSelectedCurrency}
+         />
        ))}
      </div>
      <div className="mb-3 mx-auto flex items-center justify-center flex-wrap md:gap-2 gap-1">
        <div className="flex-[0.5_1_0]"></div>
        {Currencies.slice(4, 7).map((currency, i) => (
-         <CurrencyRadio key={i} symbol={currency.symbol} iconURL={currency.iconURL} />
+         <CurrencyRadio 
+           key={i} 
+           symbol={currency.symbol} 
+           iconURL={currency.iconURL}
+           selectedCurrency={selectedCurrency}
+           onCurrencyChange={setSelectedCurrency}
+         />
        ))}
        <div className="flex-[0.5_1_0]"></div>
      </div>
