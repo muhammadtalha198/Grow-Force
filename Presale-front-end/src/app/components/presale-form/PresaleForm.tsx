@@ -21,12 +21,12 @@ import TokenPrice from "./TokenPrice";
 
 const Currencies = [
  { name: "Ethereum", symbol: "ETH", iconURL: "img/currencies/ETH.png", address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" },
- { name: "USD Coin", symbol: "USDC", iconURL: "img/currencies/USDC.png", address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" },
- { name: "Tether USD", symbol: "USDT", iconURL: "img/currencies/USDT.png", address: "0xdAC17F958D2ee523a2206206994597C13D831ec7" },
- { name: "Chainlink", symbol: "LINK", iconURL: "img/currencies/LINK.png", address: "0x514910771AF9Ca656af840dff83E8264EcF986CA" },
- { name: "Wrapped BNB", symbol: "WBNB", iconURL: "img/currencies/WBNB.png", address: "0x...WBNB_ADDRESS" },
- { name: "Wrapped Ethereum", symbol: "WETH", iconURL: "img/currencies/WETH.png", address: "0x...WETH_ADDRESS" },
- { name: "Wrapped Bitcoin", symbol: "WBTC", iconURL: "img/currencies/WBTC.png", address: "0x...WBTC_ADDRESS" },
+ { name: "USD Coin", symbol: "USDC", iconURL: "img/currencies/USDC.png", address: "0x8331BC8d1456feffd526ca6B02376b611A8C7792" },
+ { name: "Tether USD", symbol: "USDT", iconURL: "img/currencies/USDT.png", address: "0x08210F9170F89Ab7658F0B5E3fF39b0E03C594D4" },
+ { name: "Chainlink", symbol: "LINK", iconURL: "img/currencies/LINK.png", address: "0x63a6a4BE7DDA8Bd9C16e6Dda9055e35d1e84E95d" },
+ { name: "Wrapped BNB", symbol: "WBNB", iconURL: "img/currencies/WBNB.png", address: "0x514910771AF9Ca656af840dff83E8264EcF986CA" },
+ { name: "Wrapped Ethereum", symbol: "WETH", iconURL: "img/currencies/WETH.png", address: "0x514910771AF9Ca656af840dff83E8264EcF986CA" },
+ { name: "Wrapped Bitcoin", symbol: "WBTC", iconURL: "img/currencies/WBTC.png", address: "00x514910771AF9Ca656af840dff83E8264EcF986CA" },
 ];
 
 
@@ -823,8 +823,8 @@ const PresaleForm = () => {
     // const authorizer = new ethers.Contract(authAddr, AUTHORIZER_ABI, provider);
     // const nonce = await authorizer.nonces(address);
     const authorizer = new ethers.Contract(authAddr, AUTHORIZER_ABI, provider);
-    const nonce = await authorizer.getNonce("0xYourWalletAddress");
-    console.log(nonce.toString());
+    const nonce = (await authorizer.getNonce(address)).toString();
+    
 
     console.log("✅ Nonce:", nonce);
 
@@ -833,26 +833,38 @@ const PresaleForm = () => {
     if (!isNative) {
       try {
         const decContract = new ethers.Contract(paymentToken, ERC20_ABI, provider);
-        decimals = await decContract.decimals();
+        const decimalsResult = await decContract.decimals();
+        // Convert BigInt to number if needed
+        decimals = typeof decimalsResult === 'bigint' ? Number(decimalsResult) : Number(decimalsResult);
       } catch {
         console.warn("⚠️ Could not fetch token decimals, defaulting to 18");
       }
     }
+
+    console.log("🔗 Amount:", amount);
+    console.log("🔗 Amount:", amount.toString());
+    console.log("🔗 Decimals:", decimals, typeof decimals);
 
     // ---- Step 4: Request voucher ----
     const apiUrl =
       process.env.NEXT_PUBLIC_API_URL ||
       "https://dynastical-xzavier-unsanguinarily.ngrok-free.dev";
 
-    const { data } = await axios.post(`${apiUrl}/api/presale/voucher`, {
-      buyer: address,
-      beneficiary: address,
-      paymentToken:paymentToken,
-      usdAmount: amount,
-      userId: address,
-      usernonce: nonce,
-      decimals: decimals,
-    });
+    // Ensure all values are serializable (no BigInt)
+    // Convert all potential BigInt values to strings/numbers
+    const requestPayload = {
+      buyer: address || '',
+      beneficiary: address || '',
+      paymentToken: paymentToken || '',
+      usdAmount: String(amount), // amount is already a number/string from state
+      userId: address || '',
+      usernonce: String(nonce), // nonce is already converted to string on line 826
+      decimals: Number(decimals), // Ensure it's a number, not BigInt
+    };
+
+    console.log("📤 Request payload:", requestPayload);
+
+    const { data } = await axios.post(`${apiUrl}/api/presale/voucher`, requestPayload);
 
     const { voucher, signature } = data;
     console.log("🎫 Voucher received:", { voucher, signature });
@@ -873,6 +885,19 @@ const PresaleForm = () => {
       voucher.deadline,
       voucher.presale,
     ];
+
+    // Print voucher struct values for debugging
+    console.log("📋 Voucher Struct Values:");
+    console.log("  - buyer:", voucher.buyer);
+    console.log("  - beneficiary:", voucher.beneficiary);
+    console.log("  - paymentToken:", voucher.paymentToken);
+    console.log("  - usdLimit:", voucher.usdLimit, "(type:", typeof voucher.usdLimit, ")");
+    console.log("  - nonce:", voucher.nonce, "(type:", typeof voucher.nonce, ")");
+    console.log("  - deadline:", voucher.deadline, "(type:", typeof voucher.deadline, ")");
+    console.log("  - presale:", voucher.presale);
+    console.log("📋 Full Voucher Object:", JSON.stringify(voucher, null, 2));
+    console.log("📋 Voucher Struct Array:", voucherStruct);
+    console.log("📋 Signature:", signature);
 
     const beneficiary = address;
     let tx;
