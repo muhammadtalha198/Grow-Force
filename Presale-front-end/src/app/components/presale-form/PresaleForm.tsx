@@ -1029,8 +1029,10 @@ const PresaleForm = () => {
      </button>
 
 
-     {/* 🔹 Sumsub Web SDK iframe container */}
-     <div id="sumsub-websdk-container" className="mt-4"></div>
+     {/* 🔹 Sumsub Web SDK iframe container (only show if not verified) */}
+    {!isVerified && (
+      <div id="sumsub-websdk-container" className="mt-4"></div>
+    )}
 
     {/* 🔹 Country selection modal */}
     {showCountryModal && (
